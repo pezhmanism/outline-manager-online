@@ -1,0 +1,11 @@
+.env
+data/
+.preview/
+__pycache__/
+*.pyc
+*.sqlite3*
+state*.json
+config.json
+*.log
+.venv/
+dist/

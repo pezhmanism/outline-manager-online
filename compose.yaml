@@ -1,0 +1,31 @@
+name: outline-manager-online
+services:
+  panel:
+    build: .
+    restart: unless-stopped
+    environment:
+      VPN_HOST: ${VPN_HOST:?Set VPN_HOST in .env}
+      ADMIN_HOST: ${ADMIN_HOST:?Set ADMIN_HOST in .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Set ADMIN_EMAIL in .env}
+      LOCAL_ADMIN_HOST: ${LOCAL_ADMIN_HOST:-localhost:18082}
+    volumes:
+      - ${DATA_DIR:-./data}:/data
+    ports:
+      - "${ADMIN_BIND:-127.0.0.1}:18082:9000"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [outline]
+  gateway:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    ports:
+      - "127.0.0.1:18080:8080"
+    depends_on: [panel]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [outline]
+networks:
+  outline:
+    driver: bridge

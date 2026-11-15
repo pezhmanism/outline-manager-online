@@ -1,0 +1,8 @@
+:8080 {
+    handle /k/* {
+        reverse_proxy panel:8000
+    }
+    handle {
+        reverse_proxy panel:18081
+    }
+}

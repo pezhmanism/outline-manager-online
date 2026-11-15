@@ -1,0 +1,9 @@
+.git
+.env
+data
+.preview
+__pycache__
+docs
+test_*.py
+*.sqlite3*
+state*.json
