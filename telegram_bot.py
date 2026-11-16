@@ -299,7 +299,8 @@ class H(TelegramBaseH):
     def do_POST(self):
         if self.path != '/telegram-settings': return super().do_POST()
         host = self.headers.get('Host','').lower()
-        if self.server.server_port != 9000 or not self.auth() or host not in (LOCAL_ADMIN_HOST,'localhost:18082','127.0.0.1:18082',ADMIN_HOST):
+        local_host = globals().get('LOCAL_ADMIN_HOST', 'localhost:18082')
+        if self.server.server_port != 9000 or not self.auth() or host not in (local_host,'localhost:18082','127.0.0.1:18082',ADMIN_HOST):
             return self.send(403, 'Forbidden', 'text/plain')
         if host == ADMIN_HOST and self.headers.get('X-Forwarded-Proto','').lower() != 'https':
             return self.send(403, 'Use HTTPS', 'text/plain')

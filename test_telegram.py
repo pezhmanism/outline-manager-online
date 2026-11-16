@@ -3,6 +3,7 @@ import ast
 import hashlib
 import hmac
 import html
+import io
 import json
 import math
 import re
@@ -12,6 +13,7 @@ import threading
 import time
 import unittest
 import urllib.request
+from urllib.parse import parse_qs
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -22,7 +24,7 @@ class TelegramTests(unittest.TestCase):
         state = dict(password='hash', server_name='Demo', default_limit=None, users=[])
         self.restart = Mock()
         self.env = dict(D=Path(self.temp.name), Path=Path, json=json, secrets=secrets,
-                        urllib=urllib, time=time, threading=threading, re=re, hmac=hmac,
+                        urllib=urllib, time=time, threading=threading, re=re, hmac=hmac, parse_qs=parse_qs,
                         state=state, lock=threading.RLock(), restart=self.restart,
                         H=type('Base', (), {}), E=lambda x: html.escape(str(x), quote=True),
                         usage=lambda uid=None: (10, 20), limit=lambda u: u.get('limit', state['default_limit']),
@@ -151,6 +153,24 @@ class TelegramTests(unittest.TestCase):
         handler.do_POST()
         self.assertEqual(handler.send.call_args.args[0],403)
         self.assertFalse(self.env['TG_CONFIG'].exists())
+
+    def test_remote_settings_save_on_legacy_deployment_without_local_host(self):
+        self.env.pop('LOCAL_ADMIN_HOST')
+        self.env['csrf'] = 'test-csrf'
+        handler = self.env['H']()
+        handler.path = '/telegram-settings'
+        handler.server = type('Server',(),{'server_port':9000})()
+        handler.auth = lambda: True
+        body = b'token=123456%3Aabcdefghijklmnopqrstuvwxyz123456&owner_id=123&enabled=1&csrf=test-csrf'
+        handler.headers = {'Host':'panel.example.com','X-Forwarded-Proto':'https','Content-Length':str(len(body))}
+        handler.rfile = io.BytesIO(body)
+        handler.redirect = Mock()
+        handler.send = Mock()
+        handler.do_POST()
+        handler.send.assert_not_called()
+        handler.redirect.assert_called_once_with(path='/#telegram')
+        self.assertEqual(self.env['tg_load']()['owner_id'],123)
+        self.assertTrue(self.env['tg_load']()['enabled'])
 
 
 if __name__ == '__main__':
