@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from urllib.parse import parse_qs, urlencode
 
 source=ast.parse(Path(__file__).with_name('upgrade.py').read_text())
-handler_class=[n for n in source.body if isinstance(n,ast.ClassDef)][-1]
+handler_class=next(n for n in source.body if isinstance(n,ast.ClassDef) and any(isinstance(b,ast.Name) and b.id=='H2' for b in n.bases))
 
 class Base:
     def send(self,code,text,typ='text/html',cookie=None):self.result=(code,text,cookie)

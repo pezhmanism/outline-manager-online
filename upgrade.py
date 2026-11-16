@@ -4,7 +4,8 @@ import sqlite3, shutil, math
 VERSION = '2.0.0'
 if STATE.exists() and not (D/'state-before-v2.json').exists():
     shutil.copy2(STATE, D/'state-before-v2.json')
-state.setdefault('server_name', 'Outline Family')
+state['server_name'] = 'Outline Manager Online'
+save()
 state.setdefault('default_limit', None)
 db = sqlite3.connect(str(D/'usage.sqlite3'), check_same_thread=False)
 db.execute('PRAGMA journal_mode=WAL')
@@ -275,7 +276,7 @@ class H(H2):
         if typ.startswith('text/html'):
             text=text.replace('<a href="#','<a href="/#')
             if '<html' not in text:
-                text='<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Outline Family · Manager</title></head><body>'+text+'</body></html>'
+                text='<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Outline Manager Online</title></head><body>'+text+'</body></html>'
         return super().send(code,text,typ,cookie)
 
     def page(self,msg=''):
@@ -283,7 +284,7 @@ class H(H2):
             return super().page(msg)+MODERN
         if not self.auth():
             message='<p class="error">'+E(msg)+'</p>' if msg else ''
-            return STYLE+MODERN+'<main class="login"><div class="eyebrow">Private network manager</div><h1>Welcome back</h1><p class="muted">Sign in to manage your family\'s access.</p>'+message+form('/login','<label>Email<input type="email" name="email" autocomplete="username" value="'+E(state['admin_email'])+'" required></label><label>Password<input type="password" name="password" autocomplete="current-password" required></label><button>Sign in</button>')+'<p class="muted">Outline Family · '+VERSION+'</p></main>'
+            return STYLE+MODERN+'<main class="login"><div class="eyebrow">Outline Manager Online</div><h1>Welcome back</h1><p class="muted">Sign in to manage your family\'s access.</p>'+message+form('/login','<label>Email<input type="email" name="email" autocomplete="username" value="'+E(state['admin_email'])+'" required></label><label>Password<input type="password" name="password" autocomplete="current-password" required></label><button>Sign in</button>')+'<p class="muted">Outline Manager Online · '+VERSION+'</p></main>'
         page=super().page(msg)+MODERN
         page=page.replace('<a href="/backup">','<a href="/#account">Account</a><a href="/backup">')
         account='<h2 id="account">Your account</h2><article><p class="muted">Remote administration: https://'+ADMIN_HOST+'</p><div class="account-grid"><section><h2>Sign-in email</h2>'+form('/account-email','<label>Email<input type="email" name="email" value="'+E(state['admin_email'])+'" autocomplete="username" required></label><label>Current password<input type="password" name="current_password" autocomplete="current-password" required></label><button>Update email</button>')+'</section><section><h2>Change password</h2>'+form('/account-password','<label>Current password<input type="password" name="current_password" autocomplete="current-password" required></label><label>New password<input type="password" name="new_password" minlength="8" autocomplete="new-password" required></label><label>Confirm new password<input type="password" name="confirm_password" minlength="8" autocomplete="new-password" required></label><button>Change password</button>')+'<p class="muted">At least 8 characters. Updating your account signs out all sessions.</p></section></div></article>'
@@ -357,3 +358,34 @@ class H(H2):
                 return self.redirect('sid=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0')
         except ValueError as error:
             return self.send(400,STYLE+MODERN+'<main class="login"><h1>Check your details</h1><p>'+E(error)+'</p><a href="/#account">Return to account</a></main>')
+
+# Branding assets are public; account data and access keys remain private.
+HBrandBase = H
+class H(HBrandBase):
+    def send(self,code,text,typ='text/html; charset=utf-8',cookie=None):
+        if typ.startswith('text/html'):
+            brand_host=globals().get('ADMIN_HOST','')
+            tags='<link rel="icon" type="image/svg+xml" sizes="any" href="/assets/favicon.svg?v=2"><link rel="apple-touch-icon" href="/assets/thumbnail.png"><meta property="og:title" content="Outline Manager Online"><meta property="og:image" content="https://'+E(brand_host)+'/assets/thumbnail.png">'
+            if '<head>' in text:text=text.replace('<head>','<head>'+tags,1)
+            else:text=tags+text
+        return super().send(code,text,typ,cookie)
+
+    def page(self,msg=''):
+        content=super().page(msg)
+        content=content.replace('<h1>','<h1 class="brand-heading"><img src="/assets/logo.svg" alt="Outline Manager Online" width="44" height="44">',1)
+        content+='<style>.brand-heading{display:flex;align-items:center;gap:14px}.brand-heading img{flex:none;border-radius:10px}.login .brand-heading{align-items:center}</style>'
+        return content
+
+    def do_GET(self):
+        assets={'/favicon.ico':('favicon.svg','image/svg+xml'),'/assets/favicon.svg':('favicon.svg','image/svg+xml'),'/assets/logo.svg':('logo.svg','image/svg+xml'),'/assets/thumbnail.png':('thumbnail.png','image/png')}
+        if self.path.split('?',1)[0] in assets:
+            if self.server.server_port!=9000:return self.send(404,'Not found','text/plain')
+            name,mime=assets[self.path.split('?',1)[0]]
+            path=D/name
+            if not path.exists():path=Path(__file__).with_name('assets')/name
+            if not path.exists():return self.send(404,'Not found','text/plain')
+            data=path.read_bytes();self.send_response(200)
+            self.send_header('Content-Type',mime);self.send_header('Content-Length',str(len(data)))
+            self.send_header('Cache-Control','public, max-age=3600');self.send_header('X-Content-Type-Options','nosniff')
+            self.end_headers();self.wfile.write(data);return
+        return super().do_GET()

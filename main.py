@@ -50,9 +50,9 @@ class H(BaseHTTPRequestHandler):
   return sessions.get(c,0)>time.time()
  def page(self,msg=''):
   if not state['password']:
-   return STYLE+'<h1>Outline Family</h1><h2>Create your admin password</h2><p>Local administration only. Choose at least 8 characters.</p><form method="post" action="/setup"><input type="password" name="password" minlength="8" required autocomplete="new-password"><button>Set password</button></form>'+html.escape(msg)
-  if not self.auth():return STYLE+'<h1>Outline Family</h1><form method="post" action="/login"><input type="password" name="password" required autocomplete="current-password"><button>Sign in</button></form>'+html.escape(msg)
-  s=STYLE+'<h1>Outline Family</h1><p>Server: '+('Running' if proc and proc.poll() is None else 'Stopped')+' � '+DOMAIN+'</p><p>Adding or changing access briefly reconnects active users.</p><form method="post" action="/add"><input name="name" maxlength="60" placeholder="Family member name" required><button>Create key</button></form>'
+   return STYLE+'<h1>Outline Manager Online</h1><h2>Create your admin password</h2><p>Local administration only. Choose at least 8 characters.</p><form method="post" action="/setup"><input type="password" name="password" minlength="8" required autocomplete="new-password"><button>Set password</button></form>'+html.escape(msg)
+  if not self.auth():return STYLE+'<h1>Outline Manager Online</h1><form method="post" action="/login"><input type="password" name="password" required autocomplete="current-password"><button>Sign in</button></form>'+html.escape(msg)
+  s=STYLE+'<h1>Outline Manager Online</h1><p>Server: '+('Running' if proc and proc.poll() is None else 'Stopped')+' � '+DOMAIN+'</p><p>Adding or changing access briefly reconnects active users.</p><form method="post" action="/add"><input name="name" maxlength="60" placeholder="Family member name" required><button>Create key</button></form>'
   for u in state['users']:
    link='ssconf://'+DOMAIN+'/k/'+u['token']+'#'+urllib.parse.quote(u['name'])
    s+='<article><b>'+html.escape(u['name'])+'</b> � '+('Enabled' if u['enabled'] else 'Disabled')
