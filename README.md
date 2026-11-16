@@ -65,6 +65,18 @@ A `404` at the VPN hostname's root is expected: valid key/config and WebSocket p
 
 Create a key, open **Share · access link and QR**, then copy its complete `ssconf://` link into a supported Outline Client. Treat each link and its QR code as a password. Each person should have their own key. Renaming a key preserves its underlying access credentials and configuration URL.
 
+## Private Telegram manager
+
+Create a dedicated bot with the official [BotFather](https://t.me/BotFather). In the authenticated web panel, open **Telegram**, enter its token and your own numeric Telegram account ID, and enable management. Keep the token out of chat messages, GitHub, screenshots, and support logs. The saved token is never rendered back into the page.
+
+Wait until the panel shows **Connected**, open your bot's private chat, and send `/start`. The Persian button menu supports server status, key lists, creation, renaming, access links and QR codes, per-key and default 30-day limits, disabling/enabling, recoverable archiving/restoring, daily usage, server naming, engine restart, and a requested configuration backup. Restored keys remain disabled. Confirmations expire after two minutes and can only be used once. `/cancel` cancels a pending operation.
+
+Only the configured numeric account ID may manage the bot, and only in a private chat; usernames and group membership grant no access. Email/password changes open the web account page. These credentials are not accepted through bot messages. Keys and requested backups sent through the bot are stored in Telegram chats, which are **not end-to-end encrypted**; Telegram's protected-content flag restricts forwarding but does not prevent every way of copying information.
+
+The worker uses outgoing HTTPS long polling, so CGNAT requires no extra inbound ports or Cloudflare routes. A bot with an existing webhook is left untouched; use a separate bot. Disable it from the panel to stop polling within approximately 40 seconds. Both ZimaOS and the administrator must be able to reach Telegram; this is not a Telegram proxy or a way to access Telegram when it is blocked.
+
+Credentials live separately in `telegram.json`, with polling position in `telegram-offset.json`, in the persistent data directory. These are excluded from Git and are not included in the downloadable panel backup. Protect a full filesystem backup accordingly. Persisted updates are marked before execution to avoid duplicate mutations after a crash; if a request fails, inspect the key's current state before retrying. On first activation, queued updates are skipped; issue `/start` once Connected.
+
 ## Limits and operational details
 
 - Usage collection starts when this manager's metrics collector starts; old traffic cannot be reconstructed.

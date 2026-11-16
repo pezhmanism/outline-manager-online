@@ -4,8 +4,9 @@ import sqlite3, shutil, math
 VERSION = '2.0.0'
 if STATE.exists() and not (D/'state-before-v2.json').exists():
     shutil.copy2(STATE, D/'state-before-v2.json')
-state['server_name'] = 'Outline Manager Online'
-save()
+if state.get('server_name') in (None, '', 'Outline Family'):
+    state['server_name'] = 'Outline Manager Online'
+    save()
 state.setdefault('default_limit', None)
 db = sqlite3.connect(str(D/'usage.sqlite3'), check_same_thread=False)
 db.execute('PRAGMA journal_mode=WAL')
@@ -389,3 +390,10 @@ class H(HBrandBase):
             self.send_header('Cache-Control','public, max-age=3600');self.send_header('X-Content-Type-Options','nosniff')
             self.end_headers();self.wfile.write(data);return
         return super().do_GET()
+
+# Optional private Telegram administration; setup is completed in the web panel.
+_telegram_module = D / 'telegram_bot.py'
+if not _telegram_module.exists():
+    _telegram_module = Path(__file__).with_name('telegram_bot.py')
+if _telegram_module.exists():
+    exec(compile(_telegram_module.read_text(encoding='utf-8'), str(_telegram_module), 'exec'))

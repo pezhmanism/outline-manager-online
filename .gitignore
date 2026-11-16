@@ -9,3 +9,6 @@ config.json
 *.log
 .venv/
 dist/
+
+telegram.json
+telegram-offset.json
