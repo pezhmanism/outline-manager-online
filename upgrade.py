@@ -159,7 +159,7 @@ class H(BaseH):
             mode = 'default' if 'limit' not in u else ('unlimited' if u['limit'] is None else 'custom')
             options = ''.join('<option value="'+v+'"'+(' selected' if mode==v else '')+'>'+label+'</option>' for v,label in [('default','Use server default'),('custom','Custom limit'),('unlimited','Unlimited')])
             value = str(u['limit']/1073741824) if u.get('limit') is not None else ''
-            s += '<details><summary>Edit name and data limit</summary>'+form('/edit','<input type="hidden" name="id" value="'+uid+'"><label>Name <input name="name" value="'+E(u['name'])+'" maxlength="60" required></label><select name="mode">'+options+'</select><label>Limit GiB <input name="limit" type="number" min="0" step="0.01" value="'+value+'"></label><button>Save key</button>')+'</details><div class="row">'+action('Disable access' if u['enabled'] else 'Enable access','/toggle',uid)+action('Archive key','/archive',uid)+'</div></div></details>'
+            s += '<details><summary>Edit name and data limit</summary>'+form('/edit','<input type="hidden" name="id" value="'+uid+'"><label>Name <input name="name" value="'+E(u['name'])+'" maxlength="60" required></label><select name="mode">'+options+'</select><label>Limit GiB <input name="limit" type="number" min="0" step="0.01" value="'+value+'"></label><button>Save key</button>')+'</details><div class="row">'+action('Disable access' if u['enabled'] else 'Enable access','/toggle',uid)+action('Archive key','/archive',uid)+action('Delete key','/delete-key',uid)+'</div></div></details>'
         archived = [u for u in state['users'] if u.get('archived')]
         if archived:
             s += '<details><summary>Archived keys</summary>'+''.join('<article>'+E(u['name'])+action('Restore (disabled)','/restore',u['id'])+'</article>' for u in archived)+'</details>'
@@ -406,3 +406,10 @@ if not _remote_module.exists():
     _remote_module = Path(__file__).with_name('remote_servers.py')
 if _remote_module.exists():
     exec(compile(_remote_module.read_text(encoding='utf-8'), str(_remote_module), 'exec'))
+
+MODERN += '<style>form[action="/delete-key"] button,button.danger{background:#c63746;color:white}.delete-agree{font-size:14px}.delete-agree input[type="checkbox"]{display:inline;width:auto;margin-right:8px}</style>'
+_delete_module = D / 'key_delete.py'
+if not _delete_module.exists():
+    _delete_module = Path(__file__).with_name('key_delete.py')
+if _delete_module.exists():
+    exec(compile(_delete_module.read_text(encoding='utf-8'), str(_delete_module), 'exec'))

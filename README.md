@@ -18,6 +18,7 @@ These are screenshots of the actual application rendered with **demo data**. The
 - Change the admin email and password after confirming the current password.
 - Create and rename individual access keys; copy dynamic `ssconf://` links and generate QR codes locally.
 - Enable/disable access; archive keys and restore them in a disabled state.
+- Permanently delete a local key and its usage history after a separate, session-bound confirmation.
 - Measured upload/download totals per key, daily transfer history, and rolling 30-day totals.
 - Per-key limits and a default allowance applied independently to each key.
 - Server status, recent key activity, and a downloadable credential backup.
