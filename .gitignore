@@ -12,3 +12,5 @@ dist/
 
 telegram.json
 telegram-offset.json
+
+remote-servers.json

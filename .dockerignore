@@ -10,3 +10,5 @@ state*.json
 
 telegram.json
 telegram-offset.json
+
+remote-servers.json

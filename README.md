@@ -22,6 +22,16 @@ These are screenshots of the actual application rendered with **demo data**. The
 - Per-key limits and a default allowance applied independently to each key.
 - Server status, recent key activity, and a downloadable credential backup.
 - Separate VPN gateway and admin endpoints; configurable public hostnames.
+- Compact expandable key rows and collapsed account, server-settings and usage sections.
+- A server switcher and management for additional standard Outline servers.
+
+## Additional standard Outline servers
+
+Open **+ Add server**, choose a display name and paste the management JSON containing `apiUrl` and `certSha256` from the standard Outline installer or Manager. This is a management credential, not an `ss://` client access key. The panel verifies the exact SHA-256 certificate fingerprint before sending the secret API path and verifies connectivity before saving. ZimaOS must be able to reach that server's management port. No new Cloudflare route is required for this panel.
+
+Each imported server has its own compact key list, access-link sharing, key creation/renaming, per-key/default data limits and server name. Standard Outline key deletion is permanent and requires checking an explicit confirmation; it does not use the local server's recoverable archive model. Remote metrics are displayed as reported by that server and are not merged into the local SQLite history. Forgetting a server only removes its saved connection and leaves its keys running. The Telegram bot continues to manage the local ZimaOS engine.
+
+Imported credentials are stored in `remote-servers.json` in the persistent directory, excluded from Git and from the panel's downloadable local-state backup. Include it only in a protected full filesystem backup. Connection JSON is never rendered back into the panel. Existing installation credentials are supplied by the administrator; this feature does not provision a new VPS.
 
 ## Requirements
 
